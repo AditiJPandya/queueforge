@@ -2,7 +2,7 @@
 
 Last updated: 2026-11-09. Tick items as they are finished. Read this at the start of every session.
 
-**Current position: Phase 1, last task: commit the schema review through a PR. Phase 2 has not started.**
+**Current position: Phase 1 complete (2026-11-09). Starting Phase 2, task 1: `db/` module (engine + session).**
 
 ---
 
@@ -24,7 +24,7 @@ Last updated: 2026-11-09. Tick items as they are finished. Read this at the star
 - [x] Open a pull request `chore/dev-environment` -> `main` (PR #1)
 - [x] Merge the PR (squash, commit `7cdece0`), update local `main`
 - [x] Review the schema column by column (`jobs`, `job_attempts`, `workers`, `job_dependencies`) and log decisions (D14-D28 in `docs/DECISIONS.md`)
-- [ ] Commit the schema decisions and tracker on a `docs/schema-review` branch, PR, merge
+- [x] Commit the schema decisions and tracker on a `docs/schema-review` branch, PR #2 merged (commit `cb77349`)
 - [ ] Node.js: not needed until Phase 5
 
 Not yet done or untested: no automated tests exist (`backend/tests/` is empty); `/health` returns a 500, not a 503, when the DB is down.
@@ -36,7 +36,7 @@ Not yet done or untested: no automated tests exist (`backend/tests/` is empty); 
 **Technologies:** SQLAlchemy, Alembic, FastAPI, pydantic, pytest, httpx.
 **Expected output:** `POST /jobs` and `GET /jobs`, `GET /jobs/{id}` working against migrated tables, with tests.
 
-- [ ] `db/` module: engine and session dependency
+- [x] `db/` module: engine and session dependency (branch `feat/db-session`, `/health` verified through `get_db`; PR not yet merged)
 - [ ] SQLAlchemy models for the four tables
 - [ ] Alembic initialised, first migration applied
 - [ ] Pydantic schemas (API shape, separate from models)

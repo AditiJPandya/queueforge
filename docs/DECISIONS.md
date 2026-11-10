@@ -34,6 +34,7 @@ Add a new entry (never silently rewrite an old one) whenever a decision is made.
 | D26 | State-consistency CHECK (running means leased) | Schema | Accepted |
 | D27 | `job_attempts`: UNIQUE `(job_id, attempt_no)`, ON DELETE CASCADE | Schema | Accepted |
 | D28 | `job_dependencies`: PK pair, self-check, cycle check in code | Schema | Accepted |
+| D29 | Engine and sessions live in `app/db/session.py`; `get_db` dependency | 8 | Accepted |
 
 ---
 
@@ -233,12 +234,19 @@ Add a new entry (never silently rewrite an old one) whenever a decision is made.
 - **Trade-offs:** The cycle check costs a graph walk per insert.
 - **Interview question:** *How do you prevent cycles in a dependency graph?*
 
+## D29: Engine and sessions in `app/db/session.py`, `get_db` dependency
+- **Context:** Step 7 created the engine in `main.py`. Many routes will need the database, and tests must be able to swap it.
+- **Alternatives:** Keep the engine in `main.py`; build a connection inside each route.
+- **Why:** One module reads `settings.database_url` and owns the engine (one connection pool per process). Each request gets its own session through `Depends(get_db)`, closed in a `finally` so connections are never leaked and uncommitted work is rolled back. Tests can replace the dependency with `app.dependency_overrides`. `autoflush=False` makes SQL timing explicit, and `expire_on_commit=False` keeps objects readable after a commit.
+- **Trade-offs:** `get_db` never commits, so whoever writes data must commit or flush explicitly. Pending changes are not visible to queries until `flush()`.
+- **Interview question:** *Why `yield` in a FastAPI dependency, and why one session per request?* (Setup and cleanup around the route, and sessions are not safe to share.)
+
 ---
 
 ## Open questions / revisit later
 - Sync vs async engine once workers and load matter (D11).
 - Return 503 from `/health` when the DB is unreachable (D12).
-- Move the engine and sessions into a `db/` module once models arrive.
+- ~~Move the engine and sessions into a `db/` module once models arrive.~~ Done in D29.
 - Priority starvation: add aging if low-priority jobs wait too long (D18).
 - Confirm the retention numbers (7 days / 30 days) and add a stats rollup table (D24).
 - What happens to jobs that depend on a `dead` job: stay `blocked` forever, or cascade to `dead`/`cancelled`? (D28)
